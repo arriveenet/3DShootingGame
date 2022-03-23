@@ -1,4 +1,5 @@
 #include "window.h"
+#include <stdio.h>
 
 static HMENU	m_hMenu;
 static RECT		m_rc;
@@ -7,7 +8,8 @@ static HDC		m_hDC;
 static HGLRC	m_hGLRC;
 bool g_keys[256];
 void(*displayFunc)(void);
-
+void(*idleFunc)(void);
+void(*reshapeFunc)(int width, int height);
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
 	UINT uMsg,
@@ -83,9 +85,30 @@ int windowCreate(const wchar_t* _title)
 		return HRESULT_FROM_WIN32(dwError);
 	}
 
+// show degug console
+#if _DEBUG
+	FILE* stream;
+	AllocConsole();
+	freopen_s(
+		&stream,
+		"CONIN$",	// const char * _Filename
+		"r",		// const char * _Mode
+		stdin);		// FILE * _File
+	freopen_s(
+		&stream,
+		"CONOUT$",	// const char * _Filename
+		"w",		// const char * _Mode
+		stdout);	// FILE * _File
+#endif // _DEBUG
+
 	m_hDC = GetDC(m_hWnd);
 
 	return S_OK;
+}
+
+void windowPostRedisplay()
+{
+	InvalidateRect(m_hWnd, NULL, NULL);
 }
 
 static void OnCreate(HWND hWnd)
@@ -148,21 +171,37 @@ static LRESULT CALLBACK WindowProc(
 	case WM_CREATE:
 		OnCreate(hWnd);
 		break;
+	case WM_SIZE:
+		m_hDC = GetDC(hWnd);
+		wglMakeCurrent(m_hDC, m_hGLRC);
+		if(reshapeFunc != NULL)
+			reshapeFunc(LOWORD(lParam), HIWORD(lParam));
+		wglMakeCurrent(NULL, NULL);
+		ReleaseDC(hWnd, m_hDC);
+		InvalidateRect(hWnd, NULL, NULL);
+		break;
 	case WM_PAINT:
 		PAINTSTRUCT ps;
 		HDC hDC;
 
 		hDC = BeginPaint(hWnd, &ps);
-
-		//displayFunc();
-
+		/*
+		wglMakeCurrent(hDC, m_hGLRC);
+		displayFunc();
+		SwapBuffers(hDC);
+		wglMakeCurrent(NULL, NULL);
+		printf("WM_PAINT\n");
+		*/
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_SYSKEYDOWN:
 	case WM_KEYDOWN:
+		//printf("Key down[%I64d]\n", wParam);
+		g_keys[wParam] = true;
 		break;
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
+		g_keys[wParam] = false;
 		break;
 	case WM_CLOSE:
 	{
@@ -209,14 +248,17 @@ HRESULT windowMainLoop()
 		if (bGotMsg) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-		}
-		else {
-			HDC hDC = GetDC(m_hWnd);
-			wglMakeCurrent(hDC, m_hGLRC);
+		} else {
+			// update
+			idleFunc();
+
+			// draw
+			m_hDC = GetDC(m_hWnd);
+			wglMakeCurrent(m_hDC, m_hGLRC);
 			displayFunc();
-			SwapBuffers(hDC);
+			SwapBuffers(m_hDC);
 			wglMakeCurrent(NULL, NULL);
-			ReleaseDC(m_hWnd, hDC);
+			ReleaseDC(m_hWnd, m_hDC);
 		}
 	}
 
@@ -226,4 +268,14 @@ HRESULT windowMainLoop()
 void windowDisplayFunc(void (*func)(void))
 {
 	displayFunc = func;
+}
+
+void windowIdleFunc(void (*func)(void))
+{
+	idleFunc = func;
+}
+
+void windowReshapeFunc(void(*func)(int width, int height))
+{
+	reshapeFunc = func;
 }
