@@ -4,6 +4,8 @@ class Enemy :
 	public Player
 {
 public:
+	bool m_dead;
+
 	Enemy();
 	~Enemy();
 	void update();
