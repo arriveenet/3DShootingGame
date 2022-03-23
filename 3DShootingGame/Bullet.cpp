@@ -1,4 +1,5 @@
 #include "Bullet.h"
+#include "Field.h"
 #include <Windows.h>
 #include <gl/GL.h>
 
@@ -8,6 +9,7 @@ Bullet::Bullet()
 	: m_enable(false)
 	, m_position(0)
 	, m_speed(0)
+	, m_direction(0)
 {}
 
 void Bullet::update()
@@ -16,6 +18,12 @@ void Bullet::update()
 		return;
 
 	m_position -= m_direction * BULLET_SPEED;
+	m_position2 = m_position - m_direction * BULLET_SPEED;
+
+	if (!g_field.isInField(m_position)) {
+		m_enable = false;
+		m_direction = { 0,0,0 };
+	}
 }
 
 void Bullet::draw()
@@ -23,11 +31,17 @@ void Bullet::draw()
 	if (!m_enable)
 		return;
 
+	glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);// GLbitfield mask
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glColor3ub(0xff, 0xff, 0x00);
 	glPointSize(5.f);
-	glBegin(GL_POINTS);
+	glLineWidth(3.f);
+	glBegin(GL_LINES);
 	{
 		glVertex3fv((GLfloat*)&m_position);
+		glVertex3fv((GLfloat*)&m_position2);
 	}
 	glEnd();
+	glPopAttrib();
+	glPopClientAttrib();
 }
