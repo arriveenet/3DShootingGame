@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static font_info fontLoadInfo(char* _str);
-
-font_info fontInfo;
+FONTINFO fontInfo;
 
 int fontInit(const char* _fileName)
 {
@@ -53,22 +51,7 @@ int fontInit(const char* _fileName)
 	return 0;
 }
 
-font_info fontLoadInfo(char* _str)
+void fontTerm()
 {
-	font_info fi = {};
-	char* field;
-	char* context = NULL;
-	printf("%s\n", _str);
 
-	field = strtok_s(_str, "=", &context);
-	
-	while (field != NULL) {
-		field = strtok_s(NULL, "=", &context);
-		if (field != NULL) {
-			if (strcmp(field, "size")) {
-				printf("%s\n", field);
-			}
-		}
-	}
-	return fi;
 }

@@ -13,7 +13,7 @@ typedef struct {
 	unsigned int padding[4];
 	unsigned int spacing[2];
 	unsigned int outline;
-}font_info;
+}FONTINFO;
 
 typedef struct {
 	unsigned int lineHeight;
@@ -26,16 +26,16 @@ typedef struct {
 	unsigned int redChnl;
 	unsigned int greenChnl;
 	unsigned int blueChnl;
-}font_common;
+}FONTCOMMON;
 
 typedef struct {
 	unsigned int id;
 	char file[256];
-}font_page;
+}FONTPAGE;
 
 typedef struct {
 	unsigned int count;
-}font_chars;
+}FONTCHARS;
 
 typedef struct {
 	unsigned int id;
@@ -48,6 +48,7 @@ typedef struct {
 	unsigned int xadvance;
 	unsigned int page;
 	unsigned int chnl;
-}font_char;
+}FONTCHAR;
 
 int fontInit(const char* _fileName);
+void fontTerm();
