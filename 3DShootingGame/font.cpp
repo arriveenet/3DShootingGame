@@ -51,7 +51,7 @@ int fontInit(const char* _fileName)
 	return 0;
 }
 
-void fontTerm()
+void fontRelease()
 {
 
 }

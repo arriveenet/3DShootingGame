@@ -51,4 +51,4 @@ typedef struct {
 }FONTCHAR;
 
 int fontInit(const char* _fileName);
-void fontTerm();
+void fontRelease();
