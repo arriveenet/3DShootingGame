@@ -18,7 +18,6 @@ void Bullet::update()
 		return;
 
 	m_position -= m_direction * BULLET_SPEED;
-	m_position2 = m_position - m_direction * BULLET_SPEED;
 
 	if (!g_field.isInField(m_position)) {
 		m_enable = false;
@@ -35,11 +34,9 @@ void Bullet::draw()
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glColor3ub(0xff, 0xff, 0x00);
 	glPointSize(5.f);
-	glLineWidth(3.f);
-	glBegin(GL_LINES);
+	glBegin(GL_POINTS);
 	{
 		glVertex3fv((GLfloat*)&m_position);
-		glVertex3fv((GLfloat*)&m_position2);
 	}
 	glEnd();
 	glPopAttrib();
