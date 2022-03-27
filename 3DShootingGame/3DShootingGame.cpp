@@ -84,6 +84,11 @@ void reshape(int width, int height)
 		height);// GLsizei height
 }
 
+void release()
+{
+	fontRelease();
+}
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPSTR lpCmdLine,
@@ -92,9 +97,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	windowInit();
 	windowCreate(L"title");
 
+	// Set callback function
 	windowDisplayFunc(display);
 	windowIdleFunc(idle);
 	windowReshapeFunc(reshape);
+	windowReleaseFunc(release);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -110,6 +117,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	startTime = clock();
 	fontInit("font/font.fnt");
 
+	// Main loop
 	windowMainLoop();
 
 	return 0;
