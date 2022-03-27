@@ -8,6 +8,7 @@ HRESULT windowMainLoop();
 void windowDisplayFunc(void (*func)(void));
 void windowIdleFunc(void (*func)(void));
 void windowReshapeFunc(void(*func)(int width, int height));
+void windowReleaseFunc(void (*func)(void));
 
 static HINSTANCE m_hInstance;
 static const wchar_t* m_windowClassName = L"3DShootingGame";

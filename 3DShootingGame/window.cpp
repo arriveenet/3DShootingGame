@@ -1,15 +1,20 @@
 #include "window.h"
 #include <stdio.h>
 
+// Local variables
 static HMENU	m_hMenu;
 static RECT		m_rc;
 static HWND		m_hWnd;
 static HDC		m_hDC;
 static HGLRC	m_hGLRC;
+static void(*displayFunc)(void);
+static void(*idleFunc)(void);
+static void(*reshapeFunc)(int width, int height);
+static void(*releaseFunc)(void);
+
+// Global variables
 bool g_keys[256];
-void(*displayFunc)(void);
-void(*idleFunc)(void);
-void(*reshapeFunc)(int width, int height);
+
 LRESULT CALLBACK WindowProc(
 	HWND hWnd,
 	UINT uMsg,
@@ -224,6 +229,8 @@ static LRESULT CALLBACK WindowProc(
 			wglDeleteContext(m_hGLRC);
 		}
 		ReleaseDC(m_hWnd, m_hDC);
+		if(releaseFunc != NULL)
+			releaseFunc();
 		PostQuitMessage(0);
 		break;
 	}
@@ -278,4 +285,9 @@ void windowIdleFunc(void (*func)(void))
 void windowReshapeFunc(void(*func)(int width, int height))
 {
 	reshapeFunc = func;
+}
+
+void windowReleaseFunc(void (*func)(void))
+{
+	releaseFunc = func;
 }
