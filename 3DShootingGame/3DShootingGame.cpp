@@ -8,19 +8,17 @@
 #include "Enemy.h"
 #include "Field.h"
 #include "font.h"
+#include "frameCounter.h"
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "GlU32.lib")
 
 using namespace glm;
 
+ivec2 windowSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
 vec3 position(-2, 2, -2);
 vec3 center(1, 1, 1);
 Player player;
-clock_t startTime;
-tm currentTime;
-unsigned int FPS;
-unsigned int frameCounter;
 
 void xyzAxes(const vec3& _v, double length)
 {
@@ -56,18 +54,18 @@ void display()
 	xyzAxes(vec3(0, 0, 0), 2);
 	g_enemy.draw();
 	player.draw();
+	
+	fontBegin();
+	{
+		fontDraw("FPS: %d", g_frameRate);
+
+	}
+	fontEnd();
 }
 
 void idle()
 {
-	if (clock() - startTime >= 1000) {
-		startTime = clock();
-		FPS = frameCounter;
-		//printf("FPS:%d\n", FPS);
-		frameCounter = 0;
-	}
-	frameCounter++;
-
+	frameCounterUpdate();
 	g_enemy.update();
 	player.update();
 
@@ -82,6 +80,8 @@ void reshape(int width, int height)
 		0,// GLint y
 		width,// GLsizei width
 		height);// GLsizei height
+
+	windowSize = vec2(width, height);
 }
 
 void release()
@@ -107,15 +107,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	glLoadIdentity();
 	gluPerspective(
 		60.0,	// GLdouble fovy
-		(GLdouble)WINDOW_WIDTH / WINDOW_HEIGHT,	// GLdouble aspect
+		(GLdouble)windowSize.x / windowSize.y,	// GLdouble aspect
 		0.1,	// GLdouble zNear
 		0.0);// GLdouble zFar
 
-	errno_t err;
-	time_t t = time(NULL);
-	err = localtime_s(&currentTime, &t);
-	startTime = clock();
-	fontInit("font/font.fnt");
+	frameCounterInit();
+	fontInit();
 
 	// Main loop
 	windowMainLoop();
