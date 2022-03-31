@@ -25,6 +25,7 @@ static GLuint texId;
 static GLint lastMatrixMode;
 static ivec2 screenSize = { 640, 480 };
 static vec2 size;
+static float scale;
 static vec2 position;
 static vec2 origin;
 
@@ -34,6 +35,8 @@ static int fontGetCharById(int _id);
 
 int fontInit()
 {
+	scale = 0.6f;
+
 	if (fontLoadFntFile("font/font.fnt") != 0)
 		return 1;
 
@@ -192,7 +195,17 @@ void fontEnd()
 
 void fontPosition(float _x, float _y)
 {
-	position = { _x, _y };
+	origin = position = { _x, _y };
+}
+
+void fontScale(float _scale)
+{
+	scale = _scale;
+}
+
+short fontGetLineHight()
+{
+	return fontCommon.lineHeight;
 }
 
 void fontDraw(const char* format, ...)
@@ -237,7 +250,7 @@ void fontDraw(const char* format, ...)
 
 		glBegin(GL_QUADS);
 		{
-			size = { fontChars[index].width ,fontChars[index].height };
+			size = { fontChars[index].width ,fontChars[index].height};
 
 			float leftX = (float)fontChars[index].x / (float)texture.getWidth();
 			float leftY = (float)fontChars[index].y / (float)texture.getHeight();
@@ -247,23 +260,23 @@ void fontDraw(const char* format, ...)
 
 			// ç∂è„
 			glTexCoord2f(leftX, leftY);
-			glVertex2f(position.x + fontChars[index].xoffset, position.y + fontChars[index].yoffset);
+			glVertex2f(position.x + (fontChars[index].xoffset * scale), position.y + (fontChars[index].yoffset * scale));
 
 			// ç∂â∫
 			glTexCoord2f(leftX, rightY);
-			glVertex2f(position.x + fontChars[index].xoffset, position.y + size.y + fontChars[index].yoffset);
+			glVertex2f(position.x + (fontChars[index].xoffset * scale), position.y + (size.y + fontChars[index].yoffset) * scale);
 
 			// âEâ∫
 			glTexCoord2f(rightX, rightY);
-			glVertex2f(position.x + size.x + fontChars[index].xoffset, position.y + size.y + fontChars[index].yoffset);
+			glVertex2f(position.x + (size.x + fontChars[index].xoffset) * scale, position.y + (size.y + fontChars[index].yoffset) * scale);
 
 			// âEè„
 			glTexCoord2f(rightX, leftY);
-			glVertex2f(position.x + size.x + fontChars[index].xoffset, position.y + fontChars[index].yoffset);
+			glVertex2f(position.x + (size.x + fontChars[index].xoffset) * scale, position.y + (fontChars[index].yoffset * scale));
 		}
 		glEnd();
 
-		position.x += fontChars[index].xadvance;
+		position.x += fontChars[index].xadvance * scale;
 	}
 
 	if (*p == '\n') {

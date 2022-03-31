@@ -58,6 +58,8 @@ void fontRelease();
 void fontBegin();
 void fontEnd();
 void fontPosition(float _x, float _y);
+void fontScale(float _scale);
+short fontGetLineHight();
 
 void fontDraw(const char* format, ...);
 
