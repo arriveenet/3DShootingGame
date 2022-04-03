@@ -51,13 +51,24 @@ void display()
 		0, 1, 0);
 
 	g_field.draw();
-	xyzAxes(vec3(0, 0, 0), 2);
+	//xyzAxes(vec3(0, 0, 0), 2);
 	g_enemy.draw();
 	player.draw();
 	
+	glColor3ub(0x00, 0xff, 0x00);
 	fontBegin();
 	{
+		fontPosition(0, 0);
 		fontDraw("FPS: %d", g_frameRate);
+
+		fontPosition(0, 18);
+		fontDraw("Position: %f,%f,%f",
+			player.m_position.x,
+			player.m_position.y,
+			player.m_position.z);
+
+		fontPosition(0, 39);
+		fontDraw("Enemy_state: %s", enemy_state_string[g_enemy.m_state]);
 
 	}
 	fontEnd();
@@ -68,6 +79,9 @@ void idle()
 	frameCounterUpdate();
 	g_enemy.update();
 	player.update();
+
+	if (g_keys['R'])
+		g_enemy.m_dead = false;
 
 	if (g_keys[0x1b])
 		exit(0);
@@ -95,7 +109,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	_In_ int nShowCmd)
 {
 	windowInit();
-	windowCreate(L"title");
+	windowInitSize(windowSize.x, windowSize.y);
+	windowInitPosition(100, 100);
+	windowCreate(L"3D Shooting game");
 
 	// Set callback function
 	windowDisplayFunc(display);

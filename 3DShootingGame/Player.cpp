@@ -120,19 +120,25 @@ void Player::update()
 	for (int i = 0; i < 8; i++)
 		m_BBVertex[i] = m * vec4(BoundingBox[i], 1);
 
+	// “G‚Æ’e‚Ì“–‚½‚è”»’è
 	if (m_bullet.m_enable) {
 		vec3 position;
 		for (int i = 0; i < 8; i++) {
 			if (intersectLineTriangle(
 				m_bullet.m_position,	// genType const & orig
-				m_bullet.m_position - m_bullet.m_direction * BULLET_SPEED,	// genType const & dir
+				m_bullet.m_direction,	// genType const & dir
 				g_enemy.m_BBVertex[triangle[i][0]],	// genType const & vert0
 				g_enemy.m_BBVertex[triangle[i][1]],	// genType const & vert1
 				g_enemy.m_BBVertex[triangle[i][2]],	// genType const & vert2
 				position	// genType & position
 			)) {
-				printf("position: %f,%f,%f\n", position.x, position.y, position.z);
-				//g_enemy.m_dead = true;
+				vec3 intersectPosition = m_bullet.m_position + m_bullet.m_direction * position.x;
+				//printf("position: %f,%f,%f\n", intersectPosition.x, intersectPosition.y, intersectPosition.z);
+				// Œðö“_‚Æ’e‚Ì‹——£‚ªˆê’è‚Ì‹——£“à‚Å‚ ‚ê‚ÎA“–‚½‚Á‚½‚Æ”»’è‚·‚éB
+				if(((m_bullet.m_position.x - intersectPosition.x) < BULLET_SPEED)
+					&& ((m_bullet.m_position.y - intersectPosition.y) < BULLET_SPEED)
+					&& ((m_bullet.m_position.z - intersectPosition.z) < BULLET_SPEED))
+					g_enemy.m_dead = true;
 			}
 		}
 	}
@@ -159,7 +165,7 @@ void Player::draw()
 		glDisable(GL_TEXTURE_2D);// GLenum cap
 
 		// Draw player
-		glColor3ub(m_color.r, m_color.g, m_color.b);
+		glColor3ub(m_color[0], m_color[1], m_color[2]);
 		glVertexPointer(
 			3,				// GLint size
 			GL_FLOAT,		// GLenum type
@@ -169,11 +175,12 @@ void Player::draw()
 			GL_TRIANGLES,	// GLenum mode
 			0,				// GLint first
 			3);				// GLsizei count
-		glPopAttrib();
 
+		glPopAttrib();
 		glPopAttrib();
 		glPopClientAttrib();
 	}
+
 }
 
 void Player::shoot()
@@ -182,6 +189,12 @@ void Player::shoot()
 		return;
 	m_bullet.m_enable = true;
 	m_bullet.m_position = m_position;
-	m_bullet.m_position2 = m_position - m_direction * BULLET_SPEED;
 	m_bullet.m_direction = m_direction;
+}
+
+void Player::setColor(unsigned char _r, unsigned char _g, unsigned _b)
+{
+	m_color[0] = _r;
+	m_color[1] = _g;
+	m_color[2] = _b;
 }

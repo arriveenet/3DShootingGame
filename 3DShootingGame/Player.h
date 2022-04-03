@@ -7,12 +7,6 @@
 #define PLAYER_MOVE_SPEED	0.05f
 #define PLAYER_VERTEX_COUNT	3
 
-typedef struct {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-}RGB;
-
 class Player{
 public:
 	glm::vec3 m_position;
@@ -21,7 +15,7 @@ public:
 	float m_rotationAcceleration;
 	glm::vec3 m_direction;
 	Bullet m_bullet;
-	RGB m_color;
+	unsigned char m_color[3];
 	glm::vec3 m_vertex[3];
 	glm::vec3 m_BBVertex[8];
 
@@ -30,6 +24,7 @@ public:
 	virtual void update();
 	virtual void draw();
 	void shoot();
+	void setColor(unsigned char _r, unsigned char _g, unsigned _b);
 };
 
 extern const glm::vec3 PlayerVertex[PLAYER_VERTEX_COUNT];
