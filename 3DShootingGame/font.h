@@ -59,7 +59,7 @@ void fontBegin();
 void fontEnd();
 void fontPosition(float _x, float _y);
 void fontScale(float _scale);
-short fontGetLineHight();
+short fontGetLineHeight();
 
 void fontDraw(const char* format, ...);
 

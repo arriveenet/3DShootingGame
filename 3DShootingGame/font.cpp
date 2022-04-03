@@ -203,7 +203,7 @@ void fontScale(float _scale)
 	scale = _scale;
 }
 
-short fontGetLineHight()
+short fontGetLineHeight()
 {
 	return fontCommon.lineHeight;
 }
@@ -243,7 +243,6 @@ void fontDraw(const char* format, ...)
 	position = origin;
 
 	for (p = str; (*p != '\0') && (*p != '\n'); p++) {
-		glColor3ub(0xff, 0xff, 0xff);
 		int index = fontGetCharById(*p);
 		if (index == -1)
 			index = fontGetCharById(0x3f);// ?
