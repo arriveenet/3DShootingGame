@@ -2,6 +2,8 @@
 #include <Windows.h>
 
 int windowInit();
+void windowInitSize(int width, int height);
+void windowInitPosition(int x, int y);
 int windowCreate(const wchar_t* _title);
 void windowPostRedisplay();
 HRESULT windowMainLoop();

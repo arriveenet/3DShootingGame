@@ -1,12 +1,22 @@
 #include "window.h"
+
 #include <stdio.h>
+#include <glm/glm.hpp>
+
+using namespace glm;
+
+#define WINDOW_DEFAULT_WIDTH	300
+#define WINDOW_DEFAULT_HEIGHT	300
 
 // Local variables
 static HMENU	m_hMenu;
-static RECT		m_rc;
 static HWND		m_hWnd;
 static HDC		m_hDC;
 static HGLRC	m_hGLRC;
+static ivec2 m_windowSize;
+static ivec2 m_windowPosition;
+
+// callback
 static void(*displayFunc)(void);
 static void(*idleFunc)(void);
 static void(*reshapeFunc)(int width, int height);
@@ -25,8 +35,20 @@ LRESULT CALLBACK WindowProc(
 int windowInit()
 {
 	m_hInstance = NULL;
+	m_windowSize = { WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT };
+	m_windowPosition = { CW_USEDEFAULT, CW_USEDEFAULT };
 
 	return 0;
+}
+
+void windowInitSize(int width, int height)
+{
+	m_windowSize = { width, height };
+}
+
+void windowInitPosition(int x, int y)
+{
+	m_windowPosition = { x, y };
 }
 
 int windowCreate(const wchar_t* _title)
@@ -60,29 +82,25 @@ int windowCreate(const wchar_t* _title)
 			return HRESULT_FROM_WIN32(dwError);
 	}
 
-	m_rc;
-	int x = CW_USEDEFAULT;
-	int y = CW_USEDEFAULT;
-
 	m_hMenu = NULL;
 
-	int nDefaultWidth = 640;
-	int nDefalutHeight = 480;
-	SetRect(&m_rc, 0, 0, nDefaultWidth, nDefalutHeight);
+	/*
 	AdjustWindowRect(&m_rc,
 		WS_OVERLAPPEDWINDOW,
 		(m_hMenu != NULL) ? true : false);
-
+	*/
 	m_hWnd = CreateWindow(
-		m_windowClassName,
-		_title,
-		WS_OVERLAPPEDWINDOW,
-		x, y,
-		(m_rc.right - m_rc.left), (m_rc.bottom - m_rc.top),
-		0,
-		m_hMenu,
-		m_hInstance,
-		0
+		m_windowClassName,		// lpClassName
+		_title,					// lpWindowName
+		WS_OVERLAPPEDWINDOW,	// dwStyle
+		m_windowPosition.x,		// x
+		m_windowPosition.y,		// y
+		m_windowSize.x,			// nWidth
+		m_windowSize.y,			// nHeight
+		0,						// hWndParent
+		m_hMenu,				// hMenu
+		m_hInstance,			// hInstance
+		0						// lpParam
 	);
 
 	if (m_hWnd == NULL) {
@@ -162,8 +180,8 @@ static void OnCreate(HWND hWnd)
 	wglMakeCurrent(hDC, m_hGLRC);
 
 	ReleaseDC(hWnd, hDC);
-}
 
+}
 static LRESULT CALLBACK WindowProc(
 	HWND hWnd,
 	UINT uMsg,
