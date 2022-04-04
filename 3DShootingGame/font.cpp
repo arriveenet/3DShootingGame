@@ -117,7 +117,7 @@ int fontLoadFntFile(const char* _fileName)
 			result = 1;
 		else
 		{
-			fread(&fontInfo, blockSize, 1, pFile);
+			fread(&fontCommon, blockSize, 1, pFile);
 		}
 
 		// Read FONTPAGE
