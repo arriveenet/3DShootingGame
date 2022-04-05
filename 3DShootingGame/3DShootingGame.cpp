@@ -61,7 +61,7 @@ void display()
 		fontPosition(0, 0);
 		fontDraw("FPS: %d", g_frameRate);
 
-		fontPosition(0, 18);
+		fontPosition(0, fontGetLineHeight());
 		fontDraw("Position: %f,%f,%f",
 			player.m_position.x,
 			player.m_position.y,
