@@ -7,6 +7,7 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include <glm/glm.hpp>
+#include <time.h>
 
 using namespace glm;
 
@@ -31,7 +32,8 @@ static vec2 origin;
 
 // Function prototype declaration
 static int fontLoadFntFile(const char* _fileName);
-static int fontGetCharById(int _id);
+static int fontGetCharById(unsigned int _id);
+static int binarySearch(unsigned int _key, int _min, int _max);
 
 int fontInit()
 {
@@ -182,7 +184,7 @@ void fontBegin()
 
 void fontEnd()
 {
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
 	glMatrixMode(GL_PROJECTION);
@@ -203,34 +205,17 @@ void fontScale(float _scale)
 	scale = _scale;
 }
 
-short fontGetLineHeight()
+unsigned short fontGetLineHeight()
 {
-	return fontCommon.lineHeight;
+	return (unsigned short)(fontCommon.lineHeight * scale);
 }
 
 void fontDraw(const char* format, ...)
 {
-	/*
-	glColor3ub(0xff, 0xff, 0xff);
-	glBegin(GL_QUADS);
-	{
-		glTexCoord2f(0, 0);
-		glVertex2f(position.x, position.y);
-
-		glTexCoord2f(0, 1);
-		glVertex2f(position.x, position.y + size.y);
-
-		glTexCoord2f(1, 1);
-		glVertex2f(position.x + size.x, position.y + size.y);
-
-		glTexCoord2f(1, 0);
-		glVertex2f(position.x + size.x, position.y);
-	}
-	glEnd();
-		*/
 	va_list ap;
 	char str[256];
 	char* p;
+	vec2 pos = position;
 
 	va_start(ap, format);
 	vsprintf_s(str, format, ap);
@@ -238,10 +223,8 @@ void fontDraw(const char* format, ...)
 
 	glBindTexture(
 		GL_TEXTURE_2D,	// GLenum target
-		texId);		// GLuint texture
-
-	position = origin;
-
+		texId);			// GLuint texture
+	
 	for (p = str; (*p != '\0') && (*p != '\n'); p++) {
 		int index = fontGetCharById(*p);
 		if (index == -1)
@@ -257,43 +240,63 @@ void fontDraw(const char* format, ...)
 			float rightY = (float)(fontChars[index].y + fontChars[index].height) / (float)texture.getHeight();
 
 
-			// ç∂è„
+			// Upper left
 			glTexCoord2f(leftX, leftY);
-			glVertex2f(position.x + (fontChars[index].xoffset * scale), position.y + (fontChars[index].yoffset * scale));
+			glVertex2f(pos.x + (fontChars[index].xoffset * scale), pos.y + (fontChars[index].yoffset * scale));
 
-			// ç∂â∫
+			// Lower left
 			glTexCoord2f(leftX, rightY);
-			glVertex2f(position.x + (fontChars[index].xoffset * scale), position.y + (size.y + fontChars[index].yoffset) * scale);
+			glVertex2f(pos.x + (fontChars[index].xoffset * scale), pos.y + (size.y + fontChars[index].yoffset) * scale);
 
-			// âEâ∫
+			// Lower right
 			glTexCoord2f(rightX, rightY);
-			glVertex2f(position.x + (size.x + fontChars[index].xoffset) * scale, position.y + (size.y + fontChars[index].yoffset) * scale);
+			glVertex2f(pos.x + (size.x + fontChars[index].xoffset) * scale, pos.y + (size.y + fontChars[index].yoffset) * scale);
 
-			// âEè„
+			// Upper right
 			glTexCoord2f(rightX, leftY);
-			glVertex2f(position.x + (size.x + fontChars[index].xoffset) * scale, position.y + (fontChars[index].yoffset * scale));
+			glVertex2f(pos.x + (size.x + fontChars[index].xoffset) * scale, pos.y + (fontChars[index].yoffset * scale));
 		}
 		glEnd();
 
-		position.x += fontChars[index].xadvance * scale;
+		pos.x += fontChars[index].xadvance * scale;
 	}
 
 	if (*p == '\n') {
-		origin.y = position.y;
+		position.x = origin.x;
+		position.y += fontGetLineHeight();
 		fontDraw(++p);
 	}
 
 }
 
-int fontGetCharById(int _id)
+int fontGetCharById(unsigned int _id)
 {
 	int result = -1;
 
+	/*
 	for (int i = 0; i < fontCharCount; i++) {
 		if (fontChars[i].id == _id)
 			result = i;
 	}
+	*/
+	result = binarySearch(_id, 1, fontCharCount);
 
 	return result;
 	
+}
+
+int binarySearch(unsigned int _key, int _min, int _max)
+{
+	if (_max < _min) {
+		return -1;
+	} else {
+		int mid = _min + (_max - _min) / 2;
+		if (fontChars[mid].id > _key) {
+			return binarySearch(_key, _min, mid - 1);
+		} else if (fontChars[mid].id < _key) {
+			return binarySearch(_key, mid+1, _max);
+		} else {
+			return mid;
+		}
+	}
 }
