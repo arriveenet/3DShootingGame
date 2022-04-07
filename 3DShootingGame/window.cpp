@@ -51,7 +51,7 @@ void windowInitPosition(int x, int y)
 	m_windowPosition = { x, y };
 }
 
-int windowCreate(const wchar_t* _title)
+int windowCreate(const char* _title)
 {
 	if (m_hInstance == NULL)
 		m_hInstance = (HINSTANCE)GetModuleHandle(NULL);
@@ -89,9 +89,14 @@ int windowCreate(const wchar_t* _title)
 		WS_OVERLAPPEDWINDOW,
 		(m_hMenu != NULL) ? true : false);
 	*/
+	size_t titleSize = strlen(_title) + 1;
+	wchar_t* wstr = new wchar_t[titleSize];
+	size_t convertedChars = 0;
+	mbstowcs_s(&convertedChars, wstr, titleSize, _title, _TRUNCATE);
+
 	m_hWnd = CreateWindow(
 		m_windowClassName,		// lpClassName
-		_title,					// lpWindowName
+		wstr,					// lpWindowName
 		WS_OVERLAPPEDWINDOW,	// dwStyle
 		m_windowPosition.x,		// x
 		m_windowPosition.y,		// y
@@ -107,6 +112,7 @@ int windowCreate(const wchar_t* _title)
 		DWORD dwError = GetLastError();
 		return HRESULT_FROM_WIN32(dwError);
 	}
+	delete[] wstr;
 
 // show degug console
 #if _DEBUG
@@ -132,6 +138,7 @@ int windowCreate(const wchar_t* _title)
 void windowPostRedisplay()
 {
 	InvalidateRect(m_hWnd, NULL, NULL);
+	UpdateWindow(m_hWnd);
 }
 
 static void OnCreate(HWND hWnd)
@@ -201,20 +208,19 @@ static LRESULT CALLBACK WindowProc(
 			reshapeFunc(LOWORD(lParam), HIWORD(lParam));
 		wglMakeCurrent(NULL, NULL);
 		ReleaseDC(hWnd, m_hDC);
-		InvalidateRect(hWnd, NULL, NULL);
 		break;
 	case WM_PAINT:
 		PAINTSTRUCT ps;
 		HDC hDC;
 
 		hDC = BeginPaint(hWnd, &ps);
-		/*
+
 		wglMakeCurrent(hDC, m_hGLRC);
 		displayFunc();
 		SwapBuffers(hDC);
 		wglMakeCurrent(NULL, NULL);
-		printf("WM_PAINT\n");
-		*/
+		//printf("WM_PAINT\n");
+
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_SYSKEYDOWN:
@@ -278,12 +284,14 @@ HRESULT windowMainLoop()
 			idleFunc();
 
 			// draw
+			/*
 			m_hDC = GetDC(m_hWnd);
 			wglMakeCurrent(m_hDC, m_hGLRC);
 			displayFunc();
 			SwapBuffers(m_hDC);
 			wglMakeCurrent(NULL, NULL);
 			ReleaseDC(m_hWnd, m_hDC);
+			*/
 		}
 	}
 
