@@ -26,294 +26,294 @@ static void(*releaseFunc)(void);
 bool g_keys[256];
 
 LRESULT CALLBACK WindowProc(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam
+    HWND hWnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam
 );
 
 int windowInit()
 {
-	m_hInstance = NULL;
-	m_windowSize = { WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT };
-	m_windowPosition = { CW_USEDEFAULT, CW_USEDEFAULT };
+    m_hInstance = NULL;
+    m_windowSize = { WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT };
+    m_windowPosition = { CW_USEDEFAULT, CW_USEDEFAULT };
 
-	return 0;
+    return 0;
 }
 
 void windowInitSize(int width, int height)
 {
-	m_windowSize = { width, height };
+    m_windowSize = { width, height };
 }
 
 void windowInitPosition(int x, int y)
 {
-	m_windowPosition = { x, y };
+    m_windowPosition = { x, y };
 }
 
 int windowCreate(const char* _title)
 {
-	if (m_hInstance == NULL)
-		m_hInstance = (HINSTANCE)GetModuleHandle(NULL);
+    if (m_hInstance == NULL)
+        m_hInstance = (HINSTANCE)GetModuleHandle(NULL);
 
-	HICON hIcon = NULL;
-	WCHAR szExePath[MAX_PATH];
-	GetModuleFileName(NULL, szExePath, MAX_PATH);
+    HICON hIcon = NULL;
+    WCHAR szExePath[MAX_PATH];
+    GetModuleFileName(NULL, szExePath, MAX_PATH);
 
-	if (hIcon == NULL && m_hInstance == 0)
-		hIcon = ExtractIcon(m_hInstance, szExePath, 0);
+    if (hIcon == NULL && m_hInstance == 0)
+        hIcon = ExtractIcon(m_hInstance, szExePath, 0);
 
-	// Register the window class
-	WNDCLASS wndClass;
-	wndClass.style = CS_DBLCLKS;
-	wndClass.lpfnWndProc = WindowProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = m_hInstance;
-	wndClass.hIcon = hIcon;
-	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = m_windowClassName;
+    // Register the window class
+    WNDCLASS wndClass;
+    wndClass.style = CS_DBLCLKS;
+    wndClass.lpfnWndProc = WindowProc;
+    wndClass.cbClsExtra = 0;
+    wndClass.cbWndExtra = 0;
+    wndClass.hInstance = m_hInstance;
+    wndClass.hIcon = hIcon;
+    wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wndClass.lpszMenuName = NULL;
+    wndClass.lpszClassName = m_windowClassName;
 
-	if (!RegisterClass(&wndClass)) {
-		DWORD dwError = GetLastError();
-		if (dwError != ERROR_CLASS_ALREADY_EXISTS)
-			return HRESULT_FROM_WIN32(dwError);
-	}
+    if (!RegisterClass(&wndClass)) {
+        DWORD dwError = GetLastError();
+        if (dwError != ERROR_CLASS_ALREADY_EXISTS)
+            return HRESULT_FROM_WIN32(dwError);
+    }
 
-	m_hMenu = NULL;
+    m_hMenu = NULL;
 
-	/*
-	AdjustWindowRect(&m_rc,
-		WS_OVERLAPPEDWINDOW,
-		(m_hMenu != NULL) ? true : false);
-	*/
-	size_t titleSize = strlen(_title) + 1;
-	wchar_t* wstr = new wchar_t[titleSize];
-	size_t convertedChars = 0;
-	mbstowcs_s(&convertedChars, wstr, titleSize, _title, _TRUNCATE);
+    /*
+    AdjustWindowRect(&m_rc,
+        WS_OVERLAPPEDWINDOW,
+        (m_hMenu != NULL) ? true : false);
+    */
+    size_t titleSize = strlen(_title) + 1;
+    wchar_t* wstr = new wchar_t[titleSize];
+    size_t convertedChars = 0;
+    mbstowcs_s(&convertedChars, wstr, titleSize, _title, _TRUNCATE);
 
-	m_hWnd = CreateWindow(
-		m_windowClassName,		// lpClassName
-		wstr,					// lpWindowName
-		WS_OVERLAPPEDWINDOW,	// dwStyle
-		m_windowPosition.x,		// x
-		m_windowPosition.y,		// y
-		m_windowSize.x,			// nWidth
-		m_windowSize.y,			// nHeight
-		0,						// hWndParent
-		m_hMenu,				// hMenu
-		m_hInstance,			// hInstance
-		0						// lpParam
-	);
+    m_hWnd = CreateWindow(
+        m_windowClassName,		// lpClassName
+        wstr,					// lpWindowName
+        WS_OVERLAPPEDWINDOW,	// dwStyle
+        m_windowPosition.x,		// x
+        m_windowPosition.y,		// y
+        m_windowSize.x,			// nWidth
+        m_windowSize.y,			// nHeight
+        0,						// hWndParent
+        m_hMenu,				// hMenu
+        m_hInstance,			// hInstance
+        0						// lpParam
+    );
 
-	if (m_hWnd == NULL) {
-		DWORD dwError = GetLastError();
-		return HRESULT_FROM_WIN32(dwError);
-	}
-	delete[] wstr;
+    if (m_hWnd == NULL) {
+        DWORD dwError = GetLastError();
+        return HRESULT_FROM_WIN32(dwError);
+    }
+    delete[] wstr;
 
 // show degug console
 #if _DEBUG
-	FILE* stream;
-	AllocConsole();
-	freopen_s(
-		&stream,
-		"CONIN$",	// const char * _Filename
-		"r",		// const char * _Mode
-		stdin);		// FILE * _File
-	freopen_s(
-		&stream,
-		"CONOUT$",	// const char * _Filename
-		"w",		// const char * _Mode
-		stdout);	// FILE * _File
+    FILE* stream;
+    AllocConsole();
+    freopen_s(
+        &stream,
+        "CONIN$",	// const char * _Filename
+        "r",		// const char * _Mode
+        stdin);		// FILE * _File
+    freopen_s(
+        &stream,
+        "CONOUT$",	// const char * _Filename
+        "w",		// const char * _Mode
+        stdout);	// FILE * _File
 #endif // _DEBUG
 
-	m_hDC = GetDC(m_hWnd);
+    m_hDC = GetDC(m_hWnd);
 
-	return S_OK;
+    return S_OK;
 }
 
 void windowPostRedisplay()
 {
-	InvalidateRect(m_hWnd, NULL, NULL);
-	UpdateWindow(m_hWnd);
+    InvalidateRect(m_hWnd, NULL, NULL);
+    UpdateWindow(m_hWnd);
 }
 
 static void OnCreate(HWND hWnd)
 {
-	HDC hDC;
-	int nPfdID;
-	BOOL bResult;
+    HDC hDC;
+    int nPfdID;
+    BOOL bResult;
 
-	const PIXELFORMATDESCRIPTOR pfd = {
-		sizeof(PIXELFORMATDESCRIPTOR),
-		1,
-		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL
-		| PFD_DOUBLEBUFFER,
-		PFD_TYPE_RGBA,
-		32,
-		0, 0, 0,
-		0, 0, 0,
-		0, 0,
-		0, 0, 0, 0, 0,
-		32,
-		0,
-		0,
-		PFD_MAIN_PLANE,
-		0,
-		0,
-		0,
-		0
-	};
+    const PIXELFORMATDESCRIPTOR pfd = {
+        sizeof(PIXELFORMATDESCRIPTOR),
+        1,
+        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL
+        | PFD_DOUBLEBUFFER,
+        PFD_TYPE_RGBA,
+        32,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0,
+        0, 0, 0, 0, 0,
+        32,
+        0,
+        0,
+        PFD_MAIN_PLANE,
+        0,
+        0,
+        0,
+        0
+    };
 
-	hDC = GetDC(hWnd);
+    hDC = GetDC(hWnd);
 
-	nPfdID = ChoosePixelFormat(hDC, &pfd);
-	if (nPfdID == 0) {
-		return;
-	}
+    nPfdID = ChoosePixelFormat(hDC, &pfd);
+    if (nPfdID == 0) {
+        return;
+    }
 
-	bResult = SetPixelFormat(hDC, nPfdID, &pfd);
-	if (bResult == FALSE) {
-		return;
-	}
+    bResult = SetPixelFormat(hDC, nPfdID, &pfd);
+    if (bResult == FALSE) {
+        return;
+    }
 
-	m_hGLRC = wglCreateContext(hDC);
-	if (m_hGLRC == NULL) {
-		return;
-	}
-	wglMakeCurrent(hDC, m_hGLRC);
+    m_hGLRC = wglCreateContext(hDC);
+    if (m_hGLRC == NULL) {
+        return;
+    }
+    wglMakeCurrent(hDC, m_hGLRC);
 
-	ReleaseDC(hWnd, hDC);
+    ReleaseDC(hWnd, hDC);
 
 }
 static LRESULT CALLBACK WindowProc(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam
+    HWND hWnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam
 )
 {
-	switch (uMsg)
-	{
-	case WM_CREATE:
-		OnCreate(hWnd);
-		break;
-	case WM_SIZE:
-		m_hDC = GetDC(hWnd);
-		wglMakeCurrent(m_hDC, m_hGLRC);
-		if(reshapeFunc != NULL)
-			reshapeFunc(LOWORD(lParam), HIWORD(lParam));
-		wglMakeCurrent(NULL, NULL);
-		ReleaseDC(hWnd, m_hDC);
-		break;
-	case WM_PAINT:
-		PAINTSTRUCT ps;
-		HDC hDC;
+    switch (uMsg)
+    {
+    case WM_CREATE:
+        OnCreate(hWnd);
+        break;
+    case WM_SIZE:
+        m_hDC = GetDC(hWnd);
+        wglMakeCurrent(m_hDC, m_hGLRC);
+        if(reshapeFunc != NULL)
+            reshapeFunc(LOWORD(lParam), HIWORD(lParam));
+        wglMakeCurrent(NULL, NULL);
+        ReleaseDC(hWnd, m_hDC);
+        break;
+    case WM_PAINT:
+        PAINTSTRUCT ps;
+        HDC hDC;
 
-		hDC = BeginPaint(hWnd, &ps);
+        hDC = BeginPaint(hWnd, &ps);
 
-		wglMakeCurrent(hDC, m_hGLRC);
-		displayFunc();
-		SwapBuffers(hDC);
-		wglMakeCurrent(NULL, NULL);
-		//printf("WM_PAINT\n");
+        wglMakeCurrent(hDC, m_hGLRC);
+        displayFunc();
+        SwapBuffers(hDC);
+        wglMakeCurrent(NULL, NULL);
+        //printf("WM_PAINT\n");
 
-		EndPaint(hWnd, &ps);
-		break;
-	case WM_SYSKEYDOWN:
-	case WM_KEYDOWN:
-		//printf("Key down[%I64d]\n", wParam);
-		g_keys[wParam] = true;
-		break;
-	case WM_SYSKEYUP:
-	case WM_KEYUP:
-		g_keys[wParam] = false;
-		break;
-	case WM_CLOSE:
-	{
-		HMENU hMenu;
-		hMenu = GetMenu(hWnd);
-		if (hMenu != NULL)
-		{
-			DestroyMenu(hMenu);
-		}
-		DestroyWindow(hWnd);
-		UnregisterClass(
-			m_windowClassName,
-			m_hInstance
-		);
-		return 0;
-	}
+        EndPaint(hWnd, &ps);
+        break;
+    case WM_SYSKEYDOWN:
+    case WM_KEYDOWN:
+        //printf("Key down[%I64d]\n", wParam);
+        g_keys[wParam] = true;
+        break;
+    case WM_SYSKEYUP:
+    case WM_KEYUP:
+        g_keys[wParam] = false;
+        break;
+    case WM_CLOSE:
+    {
+        HMENU hMenu;
+        hMenu = GetMenu(hWnd);
+        if (hMenu != NULL)
+        {
+            DestroyMenu(hMenu);
+        }
+        DestroyWindow(hWnd);
+        UnregisterClass(
+            m_windowClassName,
+            m_hInstance
+        );
+        return 0;
+    }
 
-	case WM_DESTROY:
-		if (m_hGLRC != NULL) {
-			wglDeleteContext(m_hGLRC);
-		}
-		ReleaseDC(m_hWnd, m_hDC);
-		if(releaseFunc != NULL)
-			releaseFunc();
-		PostQuitMessage(0);
-		break;
-	}
+    case WM_DESTROY:
+        if (m_hGLRC != NULL) {
+            wglDeleteContext(m_hGLRC);
+        }
+        ReleaseDC(m_hWnd, m_hDC);
+        if(releaseFunc != NULL)
+            releaseFunc();
+        PostQuitMessage(0);
+        break;
+    }
 
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 HRESULT windowMainLoop()
 {
-	HRESULT hr = S_OK;
-	if (!IsWindowVisible(m_hWnd))
-		ShowWindow(m_hWnd, SW_SHOW);
+    HRESULT hr = S_OK;
+    if (!IsWindowVisible(m_hWnd))
+        ShowWindow(m_hWnd, SW_SHOW);
 
-	bool bGotMsg;
-	MSG msg;
-	msg.message = WM_NULL;
-	PeekMessage(&msg, NULL, 0U, 0U, PM_NOREMOVE);
+    bool bGotMsg;
+    MSG msg;
+    msg.message = WM_NULL;
+    PeekMessage(&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-	while (WM_QUIT != msg.message) {
-		bGotMsg = (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0);
+    while (WM_QUIT != msg.message) {
+        bGotMsg = (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0);
 
-		if (bGotMsg) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		} else {
-			// update
-			idleFunc();
+        if (bGotMsg) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
+            // update
+            idleFunc();
 
-			// draw
-			/*
-			m_hDC = GetDC(m_hWnd);
-			wglMakeCurrent(m_hDC, m_hGLRC);
-			displayFunc();
-			SwapBuffers(m_hDC);
-			wglMakeCurrent(NULL, NULL);
-			ReleaseDC(m_hWnd, m_hDC);
-			*/
-		}
-	}
+            // draw
+            /*
+            m_hDC = GetDC(m_hWnd);
+            wglMakeCurrent(m_hDC, m_hGLRC);
+            displayFunc();
+            SwapBuffers(m_hDC);
+            wglMakeCurrent(NULL, NULL);
+            ReleaseDC(m_hWnd, m_hDC);
+            */
+        }
+    }
 
-	return hr;
+    return hr;
 }
 
 void windowDisplayFunc(void (*func)(void))
 {
-	displayFunc = func;
+    displayFunc = func;
 }
 
 void windowIdleFunc(void (*func)(void))
 {
-	idleFunc = func;
+    idleFunc = func;
 }
 
 void windowReshapeFunc(void(*func)(int width, int height))
 {
-	reshapeFunc = func;
+    reshapeFunc = func;
 }
 
 void windowReleaseFunc(void (*func)(void))
 {
-	releaseFunc = func;
+    releaseFunc = func;
 }

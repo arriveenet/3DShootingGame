@@ -1,24 +1,25 @@
 #include "window.h"
 #include "Header.h"
-#include <glm/glm.hpp>
-#include <stdio.h>
-#include <time.h>
-
 #include "Player.h"
 #include "Enemy.h"
 #include "Field.h"
 #include "font.h"
 #include "frameCounter.h"
 
+#include <glm/glm.hpp>
+#include <stdio.h>
+#include <time.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "GlU32.lib")
 
 using namespace glm;
 
-ivec2 windowSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
+ivec2 g_windowSize = { WINDOW_WIDTH, WINDOW_HEIGHT };
 vec3 position(-2, 2, -2);
 vec3 center(1, 1, 1);
-Player player;
 
 void xyzAxes(const vec3& _v, double length)
 {
@@ -40,20 +41,19 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	position.x = sinf(radians(player.m_rotation)) * 5.0f;
+	position.x = sinf(radians(g_player.m_rotation)) * 5.0f;
 	position.y = 3.2f;
-	position.z = cosf(radians(player.m_rotation)) * 5.0f;
-	position = player.m_position + position;
-	center = player.m_position;
+	position.z = cosf(radians(g_player.m_rotation)) * 5.0f;
+	position = g_player.m_position + position;
+	center = g_player.m_position;
 	gluLookAt(
 		position.x, position.y, position.z,
 		center.x, center.y, center.z,
 		0, 1, 0);
 
 	g_field.draw();
-	//xyzAxes(vec3(0, 0, 0), 2);
 	g_enemy.draw();
-	player.draw();
+	g_player.draw();
 	
 	glColor3ub(0x00, 0xff, 0x00);
 	fontBegin();
@@ -61,10 +61,10 @@ void display()
 		fontPosition(0, 0);
 		fontDraw("FPS: %d\n", g_frameRate);
 		fontDraw("Position: %f,%f,%f\n",
-			player.m_position.x,
-			player.m_position.y,
-			player.m_position.z);
-		fontDraw("Rotation: %f\n", player.m_rotation);
+			g_player.m_position.x,
+			g_player.m_position.y,
+			g_player.m_position.z);
+		fontDraw("Rotation: %f\n", g_player.m_rotation);
 		fontDraw("Enemy_state: %s\n", enemy_state_string[g_enemy.m_state]);
 	}
 	fontEnd();
@@ -75,13 +75,15 @@ void idle()
 {
 	frameCounterUpdate();
 	g_enemy.update();
-	player.update();
+	g_player.update();
 
 	if (g_keys['R'])
 		g_enemy.m_dead = false;
 
 	if (g_keys[0x1b])
 		exit(0);
+
+	windowPostRedisplay();
 }
 
 void reshape(int width, int height)
@@ -92,7 +94,9 @@ void reshape(int width, int height)
 		width,// GLsizei width
 		height);// GLsizei height
 
-	windowSize = vec2(width, height);
+	g_windowSize = vec2(width, height);
+
+	windowPostRedisplay();
 }
 
 void release()
@@ -106,9 +110,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	_In_ int nShowCmd)
 {
 	windowInit();
-	windowInitSize(windowSize.x, windowSize.y);
+	windowInitSize(g_windowSize.x, g_windowSize.y);
 	windowInitPosition(100, 100);
-	windowCreate(L"3D Shooting game");
+	windowCreate("3D Shooting game");
 
 	// Set callback function
 	windowDisplayFunc(display);
@@ -120,7 +124,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	glLoadIdentity();
 	gluPerspective(
 		60.0,	// GLdouble fovy
-		(GLdouble)windowSize.x / windowSize.y,	// GLdouble aspect
+		(GLdouble)g_windowSize.x / g_windowSize.y,	// GLdouble aspect
 		0.1,	// GLdouble zNear
 		0.0);// GLdouble zFar
 
