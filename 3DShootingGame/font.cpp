@@ -1,5 +1,6 @@
 #include "font.h"
 #include "Texture.h"
+#include "Header.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +25,7 @@ static GLuint texId;
 
 // Font Internal variables
 static GLint lastMatrixMode;
-static ivec2 screenSize = { 640, 480 };
+static ivec2 screenSize;
 static vec2 size;
 static float scale;
 static vec2 position;
@@ -33,10 +34,11 @@ static vec2 origin;
 // Function prototype declaration
 static int fontLoadFntFile(const char* _fileName);
 static int fontGetCharById(unsigned int _id);
-static int binarySearch(unsigned int _key, int _min, int _max);
+static inline int binarySearch(unsigned int _key, int _min, int _max);
 
 int fontInit()
 {
+	screenSize = g_windowSize;
 	scale = 0.6f;
 
 	if (fontLoadFntFile("font/font.fnt") != 0)
@@ -63,6 +65,7 @@ int fontInit()
 		GL_TEXTURE_2D,			// GLenum target
 		GL_TEXTURE_MIN_FILTER,	// GLenum pname
 		GL_NEAREST);			// GLint param
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return 0;
 }
@@ -72,6 +75,7 @@ void fontRelease()
 	if (fontChars != NULL)
 		free(fontChars);
 	texture.deleteTexImage();
+	glDeleteTextures(1, &texId); // GLsizei n, const GLuint *textures
 }
 
 int fontLoadFntFile(const char* _fileName)
@@ -180,10 +184,18 @@ void fontBegin()
 	glBlendFunc(
 		GL_SRC_ALPHA,			//GLenum sfactor
 		GL_ONE_MINUS_SRC_ALPHA);//GLenum dfactor
+
+	glBindTexture(
+		GL_TEXTURE_2D,	// GLenum target
+		texId);			// GLuint texture
 }
 
 void fontEnd()
 {
+	glBindTexture(
+		GL_TEXTURE_2D,	// GLenum target
+		0);				// GLuint texture
+
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
@@ -220,10 +232,6 @@ void fontDraw(const char* format, ...)
 	va_start(ap, format);
 	vsprintf_s(str, format, ap);
 	va_end(ap);
-
-	glBindTexture(
-		GL_TEXTURE_2D,	// GLenum target
-		texId);			// GLuint texture
 	
 	for (p = str; (*p != '\0') && (*p != '\n'); p++) {
 		int index = fontGetCharById(*p);
@@ -285,7 +293,7 @@ int fontGetCharById(unsigned int _id)
 	
 }
 
-int binarySearch(unsigned int _key, int _min, int _max)
+static inline int binarySearch(unsigned int _key, int _min, int _max)
 {
 	if (_max < _min) {
 		return -1;
