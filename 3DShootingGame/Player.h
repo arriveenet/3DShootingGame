@@ -27,5 +27,6 @@ public:
 	void setColor(unsigned char _r, unsigned char _g, unsigned _b);
 };
 
+extern Player g_player;
 extern const glm::vec3 PlayerVertex[PLAYER_VERTEX_COUNT];
 extern const glm::vec3 BoundingBox[8];

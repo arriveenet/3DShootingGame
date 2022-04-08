@@ -10,6 +10,8 @@
 
 using namespace glm;
 
+Player g_player;
+
 const vec3 PlayerVertex[PLAYER_VERTEX_COUNT] = {
 	{0, 0, -1.0f},
 	{-0.5f, 0, 1.0f},
