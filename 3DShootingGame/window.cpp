@@ -141,6 +141,13 @@ void windowPostRedisplay()
     UpdateWindow(m_hWnd);
 }
 
+void windowSwapBuffers()
+{
+    m_hDC = GetDC(m_hWnd);
+    SwapBuffers(m_hDC);
+    ReleaseDC(m_hWnd, m_hDC);
+}
+
 static void OnCreate(HWND hWnd)
 {
     HDC hDC;
@@ -217,7 +224,6 @@ static LRESULT CALLBACK WindowProc(
 
         wglMakeCurrent(hDC, m_hGLRC);
         displayFunc();
-        SwapBuffers(hDC);
         wglMakeCurrent(NULL, NULL);
         //printf("WM_PAINT\n");
 

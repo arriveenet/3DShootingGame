@@ -6,6 +6,7 @@ void windowInitSize(int width, int height);
 void windowInitPosition(int x, int y);
 int windowCreate(const char* _title);
 void windowPostRedisplay();
+void windowSwapBuffers();
 HRESULT windowMainLoop();
 void windowDisplayFunc(void (*func)(void));
 void windowIdleFunc(void (*func)(void));

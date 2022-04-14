@@ -69,6 +69,7 @@ void display()
 	}
 	fontEnd();
 
+	windowSwapBuffers();
 }
 
 void idle()
