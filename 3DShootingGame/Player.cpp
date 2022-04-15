@@ -18,7 +18,7 @@ const vec3 PlayerVertex[PLAYER_VERTEX_COUNT] = {
 	{0.5f, 0, 1.0f}
 };
 
-const vec3 BoundingBox[8] = {
+const vec3 BoundingBox[PLAYER_BB_VERTEX_COUNT] = {
 	{-0.5, -0.5, -1},
 	{-0.5, -0.5, 1},
 	{0.5, -0.5, 1},
@@ -29,31 +29,34 @@ const vec3 BoundingBox[8] = {
 	{0.5, 0.5, -1}
 };
 
-int faces[12][2] = {
-	{0,1},
-	{1,2},
-	{2,3},
-	{3,0},
-	{4,5},
-	{5,6},
-	{6,7},
-	{7,4},
-	{4,0},
-	{5,1},
-	{6,2},
-	{7,3}
-};
+namespace PlayerData {
 
-int triangle[8][3] = {
-	{2,5,1},
-	{5,2,0},
-	{3,0,2},
-	{0,3,7},
-	{3,4,0},
-	{4,3,7},
-	{0,5,1},
-	{5,0,4}
-};
+	const int faces[12][2] = {
+		{0,1},
+		{1,2},
+		{2,3},
+		{3,0},
+		{4,5},
+		{5,6},
+		{6,7},
+		{7,4},
+		{4,0},
+		{5,1},
+		{6,2},
+		{7,3}
+	};
+
+	const int triangle[8][3] = {
+		{2,5,1},
+		{5,2,0},
+		{3,0,2},
+		{0,3,7},
+		{3,4,0},
+		{4,3,7},
+		{0,5,1},
+		{5,0,4}
+	};
+}
 
 Player::Player()
 	: m_position(0,0,0)
@@ -66,7 +69,7 @@ Player::Player()
 {
 	for (int i = 0; i < PLAYER_VERTEX_COUNT; i++)
 		m_vertex[i] = PlayerVertex[i];
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < PLAYER_BB_VERTEX_COUNT; i++)
 		m_BBVertex[i] = BoundingBox[i];
 }
 
@@ -115,8 +118,8 @@ void Player::update()
 	m_direction = normalize(m_direction);
 
 	mat4 m = mat4(1);
-	m = translate(m, vec3(m_position));
-	m = rotate(m, radians(m_rotation), vec3(0, 1, 0));
+	m = glm::translate(m, vec3(m_position));
+	m = glm::rotate(m, radians(m_rotation), vec3(0, 1, 0));
 	for(int i = 0; i < PLAYER_VERTEX_COUNT; i++)
 		m_vertex[i] = m * vec4(PlayerVertex[i], 1);
 	for (int i = 0; i < 8; i++)
@@ -126,12 +129,12 @@ void Player::update()
 	if (m_bullet.m_enable) {
 		vec3 position;
 		for (int i = 0; i < 8; i++) {
-			if (intersectLineTriangle(
+			if (glm::intersectLineTriangle(
 				m_bullet.m_position,	// genType const & orig
 				m_bullet.m_direction,	// genType const & dir
-				g_enemy.m_BBVertex[triangle[i][0]],	// genType const & vert0
-				g_enemy.m_BBVertex[triangle[i][1]],	// genType const & vert1
-				g_enemy.m_BBVertex[triangle[i][2]],	// genType const & vert2
+				g_enemy.m_BBVertex[PlayerData::triangle[i][0]],	// genType const & vert0
+				g_enemy.m_BBVertex[PlayerData::triangle[i][1]],	// genType const & vert1
+				g_enemy.m_BBVertex[PlayerData::triangle[i][2]],	// genType const & vert2
 				position	// genType & position
 			)) {
 				vec3 intersectPosition = m_bullet.m_position + m_bullet.m_direction * position.x;
@@ -155,8 +158,8 @@ void Player::draw()
 	glColor3ub(0x00, 0xff, 0xff);
 	for (int i = 0; i < 12; i++) {
 		glBegin(GL_LINES);
-		glVertex3fv((GLfloat*)&m_BBVertex[faces[i][0]]);
-		glVertex3fv((GLfloat*)&m_BBVertex[faces[i][1]]);
+		glVertex3fv((GLfloat*)&m_BBVertex[PlayerData::faces[i][0]]);
+		glVertex3fv((GLfloat*)&m_BBVertex[PlayerData::faces[i][1]]);
 		glEnd();
 	}
 
@@ -199,4 +202,14 @@ void Player::setColor(unsigned char _r, unsigned char _g, unsigned _b)
 	m_color[0] = _r;
 	m_color[1] = _g;
 	m_color[2] = _b;
+}
+
+vec3 Player::getPosition() const
+{
+	return m_position;
+}
+
+float Player::getRotation() const
+{
+	return m_rotation;
 }

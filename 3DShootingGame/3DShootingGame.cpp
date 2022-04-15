@@ -41,11 +41,11 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	position.x = sinf(radians(g_player.m_rotation)) * 5.0f;
+	position.x = sinf(radians(g_player.getRotation())) * 5.0f;
 	position.y = 3.2f;
-	position.z = cosf(radians(g_player.m_rotation)) * 5.0f;
-	position = g_player.m_position + position;
-	center = g_player.m_position;
+	position.z = cosf(radians(g_player.getRotation())) * 5.0f;
+	position = g_player.getPosition() + position;
+	center = g_player.getPosition();
 	gluLookAt(
 		position.x, position.y, position.z,
 		center.x, center.y, center.z,
@@ -61,10 +61,10 @@ void display()
 		fontPosition(0, 0);
 		fontDraw("FPS: %d\n", g_frameRate);
 		fontDraw("Position: %f,%f,%f\n",
-			g_player.m_position.x,
-			g_player.m_position.y,
-			g_player.m_position.z);
-		fontDraw("Rotation: %f\n", g_player.m_rotation);
+			g_player.getPosition().x,
+			g_player.getPosition().y,
+			g_player.getPosition().z);
+		fontDraw("Rotation: %f\n", g_player.getRotation());
 		fontDraw("Enemy_state: %s\n", enemy_state_string[g_enemy.m_state]);
 	}
 	fontEnd();
