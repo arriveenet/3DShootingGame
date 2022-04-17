@@ -13,37 +13,29 @@ using namespace glm;
 Player g_player;
 
 const vec3 PlayerVertex[PLAYER_VERTEX_COUNT] = {
-	{0, 0, -1.0f},
-	{-0.5f, 0, 1.0f},
-	{0.5f, 0, 1.0f}
+	{ 0.0f, 0.0f, -1.0f},
+	{-0.5f, 0.0f,  1.0f},
+	{ 0.5f, 0.0f,  1.0f}
 };
 
 const vec3 BoundingBox[PLAYER_BB_VERTEX_COUNT] = {
 	{-0.5, -0.5, -1},
-	{-0.5, -0.5, 1},
-	{0.5, -0.5, 1},
-	{0.5, -0.5, -1},
-	{-0.5, 0.5, -1},
-	{-0.5, 0.5, 1},
-	{0.5, 0.5, 1},
-	{0.5, 0.5, -1}
+	{-0.5, -0.5,  1},
+	{ 0.5, -0.5,  1},
+	{ 0.5, -0.5, -1},
+	{-0.5,  0.5, -1},
+	{-0.5,  0.5,  1},
+	{ 0.5,  0.5,  1},
+	{ 0.5,  0.5, -1}
 };
 
 namespace PlayerData {
 
-	const int faces[12][2] = {
-		{0,1},
-		{1,2},
-		{2,3},
-		{3,0},
-		{4,5},
-		{5,6},
-		{6,7},
-		{7,4},
-		{4,0},
-		{5,1},
-		{6,2},
-		{7,3}
+	const GLubyte BBIndices[] = {
+		0, 1, 1, 2, 2, 3,
+		3, 0, 4, 5, 5, 6,
+		6, 7, 7, 4, 4, 0,
+		5, 1, 6, 2, 7, 3
 	};
 
 	const int triangle[8][3] = {
@@ -122,7 +114,7 @@ void Player::update()
 	m = glm::rotate(m, radians(m_rotation), vec3(0, 1, 0));
 	for(int i = 0; i < PLAYER_VERTEX_COUNT; i++)
 		m_vertex[i] = m * vec4(PlayerVertex[i], 1);
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < PLAYER_BB_VERTEX_COUNT; i++)
 		m_BBVertex[i] = m * vec4(BoundingBox[i], 1);
 
 	// “G‚Æ’e‚Ì“–‚½‚è”»’è
@@ -155,6 +147,7 @@ void Player::draw()
 	m_bullet.draw();
 
 	// Draw bounding box
+	/*
 	glColor3ub(0x00, 0xff, 0xff);
 	for (int i = 0; i < 12; i++) {
 		glBegin(GL_LINES);
@@ -162,12 +155,26 @@ void Player::draw()
 		glVertex3fv((GLfloat*)&m_BBVertex[PlayerData::faces[i][1]]);
 		glEnd();
 	}
+	*/
 
 	{
 		glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);// GLbitfield mask
 		glPushAttrib(GL_ALL_ATTRIB_BITS);// GLbitfield mask
 		glEnableClientState(GL_VERTEX_ARRAY);// GLenum array
 		glDisable(GL_TEXTURE_2D);// GLenum cap
+
+		// Draw bounding box
+		glColor3ub(0x00, 0xff, 0xff);
+		glVertexPointer(
+			3,				// GLint size
+			GL_FLOAT,		// GLenum type
+			0,				// GLsizei stride
+			&m_BBVertex);	// const GLvoid * pointer
+		glDrawElements(
+			GL_LINES,				// GLenum mode
+			24,						// GLsizei count
+			GL_UNSIGNED_BYTE,		// GLenum type
+			PlayerData::BBIndices);	// const GLvoid *indices
 
 		// Draw player
 		glColor3ub(m_color[0], m_color[1], m_color[2]);
@@ -177,9 +184,9 @@ void Player::draw()
 			0,				// GLsizei stride
 			&m_vertex);		// const GLvoid * pointer
 		glDrawArrays(
-			GL_TRIANGLES,	// GLenum mode
-			0,				// GLint first
-			3);				// GLsizei count
+			GL_TRIANGLES,			// GLenum mode
+			0,						// GLint first
+			PLAYER_VERTEX_COUNT);	// GLsizei count
 
 		glPopAttrib();
 		glPopAttrib();
