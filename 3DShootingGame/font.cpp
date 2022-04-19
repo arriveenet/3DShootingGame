@@ -31,6 +31,13 @@ static float scale;
 static vec2 position;
 static vec2 origin;
 
+static GLfloat vertex[8];
+static GLfloat texCoord[8];
+
+static GLubyte indices[6] = {
+	0, 1, 2, 0, 2, 3
+};
+
 // Function prototype declaration
 static int fontLoadFntFile(const char* _fileName);
 static int fontGetCharById(unsigned int _id);
@@ -181,6 +188,8 @@ void fontBegin()
 	// Enable texture
 	glEnable(GL_TEXTURE_2D);	// GLenum cap
 	glEnable(GL_BLEND);			// GLenum cap
+	glEnableClientState(GL_VERTEX_ARRAY);// GLenum array
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);// GLenum array
 	glBlendFunc(
 		GL_SRC_ALPHA,			//GLenum sfactor
 		GL_ONE_MINUS_SRC_ALPHA);//GLenum dfactor
@@ -195,7 +204,8 @@ void fontEnd()
 	glBindTexture(
 		GL_TEXTURE_2D,	// GLenum target
 		0);				// GLuint texture
-
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 
@@ -238,6 +248,47 @@ void fontDraw(const char* format, ...)
 		if (index == -1)
 			index = fontGetCharById(0x3f);// ?
 
+		size = { fontChars[index].width ,fontChars[index].height };
+
+		float leftX = (float)fontChars[index].x / (float)texture.getWidth();
+		float leftY = (float)fontChars[index].y / (float)texture.getHeight();
+		float rightX = (float)(fontChars[index].x + fontChars[index].width) / (float)texture.getWidth();
+		float rightY = (float)(fontChars[index].y + fontChars[index].height) / (float)texture.getHeight();
+
+		vertex[0] = pos.x + (fontChars[index].xoffset * scale);// Upper left x
+		vertex[1] = pos.y + (fontChars[index].yoffset * scale);// Upper left y
+		vertex[2] = pos.x + (fontChars[index].xoffset * scale);// Lower left x
+		vertex[3] = pos.y + (size.y + fontChars[index].yoffset) * scale;// Lower left y
+		vertex[4] = pos.x + (size.x + fontChars[index].xoffset) * scale;// Lower right x
+		vertex[5] = pos.y + (size.y + fontChars[index].yoffset) * scale;// Lower right y
+		vertex[6] = pos.x + (size.x + fontChars[index].xoffset) * scale;// Upper right x
+		vertex[7] = pos.y + (fontChars[index].yoffset * scale);// Upper right y
+
+		texCoord[0] = leftX; // Upper left x
+		texCoord[1] = leftY; // Upper left y
+		texCoord[2] = leftX; // Lower left x
+		texCoord[3] = rightY;// Lower left y
+		texCoord[4] = rightX;// Lower right x
+		texCoord[5] = rightY;// Lower right y
+		texCoord[6] = rightX;// Upper right x
+		texCoord[7] = leftY; // Upper right y
+
+		glVertexPointer(
+			2,			// GLint size
+			GL_FLOAT,	// GLenum type
+			0,			// GLsizei stride
+			vertex);	// const GLvoid * pointer
+		glTexCoordPointer(
+			2,			// GLint size
+			GL_FLOAT,	// GLenum type
+			0,			// GLsizei stride
+			texCoord);	// const GLvoid * pointer
+		glDrawElements(
+			GL_TRIANGLES,		// GLenum mode
+			6,					// GLsizei count
+			GL_UNSIGNED_BYTE,	// GLenum type
+			indices);			// const GLvoid *indices
+		/*
 		glBegin(GL_QUADS);
 		{
 			size = { fontChars[index].width ,fontChars[index].height};
@@ -265,7 +316,7 @@ void fontDraw(const char* format, ...)
 			glVertex2f(pos.x + (size.x + fontChars[index].xoffset) * scale, pos.y + (fontChars[index].yoffset * scale));
 		}
 		glEnd();
-
+		*/
 		pos.x += fontChars[index].xadvance * scale;
 	}
 
@@ -274,7 +325,6 @@ void fontDraw(const char* format, ...)
 		position.y += fontGetLineHeight();
 		fontDraw(++p);
 	}
-
 }
 
 int fontGetCharById(unsigned int _id)
