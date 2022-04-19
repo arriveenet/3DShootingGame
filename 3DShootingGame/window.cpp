@@ -148,7 +148,7 @@ void windowSwapBuffers()
     ReleaseDC(m_hWnd, m_hDC);
 }
 
-static void OnCreate(HWND hWnd)
+static void setPixelFormat(HWND hWnd)
 {
     HDC hDC;
     int nPfdID;
@@ -206,7 +206,7 @@ static LRESULT CALLBACK WindowProc(
     switch (uMsg)
     {
     case WM_CREATE:
-        OnCreate(hWnd);
+        setPixelFormat(hWnd);
         break;
     case WM_SIZE:
         m_hDC = GetDC(hWnd);
