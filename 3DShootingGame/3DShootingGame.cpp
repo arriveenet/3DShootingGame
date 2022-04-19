@@ -37,8 +37,7 @@ void xyzAxes(const vec3& _v, double length)
 
 void display()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	position.x = sinf(radians(g_player.getRotation())) * 5.0f;
@@ -54,6 +53,7 @@ void display()
 	g_field.draw();
 	g_enemy.draw();
 	g_player.draw();
+	xyzAxes(vec3(0,0,0), 1.0);
 	
 	glColor3ub(0x00, 0xff, 0x00);
 	fontBegin();
@@ -112,7 +112,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 {
 	windowInit();
 	windowInitSize(g_windowSize.x, g_windowSize.y);
-	windowInitPosition(100, 100);
+	windowInitPosition(300, 300);
 	windowCreate("3D Shooting game");
 
 	// Set callback function
@@ -121,13 +121,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,
 	windowReshapeFunc(reshape);
 	windowReleaseFunc(release);
 
-	glMatrixMode(GL_PROJECTION);
+	glEnable(GL_DEPTH_TEST); // GLenum cap
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glMatrixMode(GL_PROJECTION); // GLenum mode
 	glLoadIdentity();
 	gluPerspective(
 		60.0,	// GLdouble fovy
 		(GLdouble)g_windowSize.x / g_windowSize.y,	// GLdouble aspect
 		0.1,	// GLdouble zNear
-		0.0);// GLdouble zFar
+		0.0);	// GLdouble zFar
 
 	frameCounterInit();
 	fontInit();
